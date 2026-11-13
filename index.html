@@ -481,7 +481,7 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
 .stop.maybe::before { background: var(--gold); border-color: var(--gold); }
 .stop.pass { opacity: .6; }
 .stop.pass .name a { text-decoration: line-through; }
-.stop.pass .note, .stop.pass .controls, .stop.pass .timebox { display: none; }
+.stop.pass .note, .stop.pass .timebox { display: none; }
 .stop.todo { border-color: color-mix(in oklab, var(--c) 55%, transparent); }
 
 #plan[data-filter="todo"] .stop:not(.todo),
@@ -631,6 +631,8 @@ const G = q => "https://www.google.com/search?q=" + encodeURIComponent(q);
 // kind: free | tickets | food (reservation noted in text)
 const EVENTS = [
   { id: "liberty-bagels", day: "dec20", time: "08:30", name: "Liberty Bagels", kind: "food", note: "Breakfast in Midtown before heading up to the Bronx.", url: G("Liberty Bagels NYC") },
+  { id: "deli", day: "dec20", time: "09:30", name: "Gourmet deli breakfast sandwich", kind: "food", note: "Her pick instead of Liberty Bagels: the classic New York bacon, egg and cheese on a roll from a gourmet deli near Times Square.", url: "https://www.google.com/maps/search/gourmet+deli+near+Times+Square+New+York" },
+  { id: "nye-ball", day: "dec20", time: "12:00", name: "New Year's Eve Ball Experience, One Times Square", kind: "tickets", note: "See the real Times Square ball up close, plus the Times Travel exhibit and Skywalk deck. About $155 per ticket, timed entry. Waterford crystals from the ball are an add-on ($125–195). Check the hours before booking.", url: "https://onetimessquare.com/buy-tickets" },
   { id: "nybg", day: "dec20", time: "10:30", name: "NYBG Holiday Train Show", kind: "tickets", note: "Timed tickets at the New York Botanical Garden.", url: "https://www.nybg.org/event/holiday-train-show-2026/" },
   { id: "bronx-zoo", day: "dec20", time: "17:00", name: "Bronx Zoo Holiday Lights", kind: "tickets", note: "Opens after dark, a short walk from NYBG.", url: "https://bronxzoo.com/holiday-lights/tickets" },
 
@@ -670,7 +672,7 @@ const EVENTS = [
   { id: "esb", day: "any", time: "21:00", name: "Empire State Building", kind: "tickets", note: "Best at night, and it's open late.", url: "https://www.esbnyc.com/buy-tickets" },
   { id: "broadway", day: "any", time: "19:00", name: "A Broadway show", kind: "tickets", note: "Evening or matinee.", url: "https://www.broadway.org/shows/" },
   { id: "friends", day: "any", time: "12:00", name: "The FRIENDS Experience", kind: "tickets", note: "Near Union Square.", url: "https://friendstheexperience.com/new-york/" },
-  { id: "staten", day: "any", time: "08:00", name: "Staten Island Ferry", kind: "free", note: "Free ride that passes the Statue of Liberty. About an hour round trip from Whitehall.", url: G("Staten Island Ferry schedule") },
+  { id: "staten", day: "any", time: "08:00", name: "Staten Island Ferry", kind: "free", note: "Free, no ticket, runs 24/7 from Whitehall (South Ferry) and passes right by the Statue of Liberty. About 25 min each way. Ferry comparison: the NYC Ferry also has a St. George route to Staten Island, but it costs $5 a ride (since Oct 2026), so the Staten Island Ferry is the cheapest way to see the Statue. Only Statue City Cruises (Dec 23) actually stops at Liberty and Ellis Island.", url: "https://www.siferry.com/" },
   { id: "burger", day: "any", time: "12:30", name: "7th Street Burger", kind: "food", note: "The original is on E 7th St, around the corner from East Village Pizza. Other locations too.", url: G("7th Street Burger locations") },
   { id: "ev-pizza", day: "any", time: "13:00", name: "East Village Pizza", kind: "food", note: "1st Ave in the East Village.", url: G("East Village Pizza NYC") },
   { id: "pasta-rullo", day: "any", time: "18:00", name: "Pasta Rullo", kind: "food", note: "Not on the map yet. Tell Claude the address and it will be added.", url: G("Pasta Rullo NYC") },
@@ -690,6 +692,7 @@ const COORDS = {
   "st-pats": [40.7585, -73.9760], serendipity: [40.7618, -73.9649], esb: [40.7484, -73.9857],
   broadway: [40.7590, -73.9855], friends: [40.7397, -73.9849], staten: [40.7013, -74.0130],
   burger: [40.7267, -73.9844], "ev-pizza": [40.7280, -73.9851],
+  deli: [40.7577, -73.9878], "nye-ball": [40.7564, -73.9865],
 };
 
 /* ---------- getting around ---------- */
@@ -709,6 +712,8 @@ const bullets = lines => lines.map(l =>
 // Nearest station to each stop.
 const STATIONS = {
   "liberty-bagels": { st: "34 St–Penn Station", lines: ["1", "2", "3", "A", "C", "E"] },
+  deli: { st: "Times Sq–42 St", lines: ["1", "2", "3", "7", "N", "Q", "R", "W", "S"] },
+  "nye-ball": { st: "Times Sq–42 St", lines: ["1", "2", "3", "7", "N", "Q", "R", "W", "S"] },
   nybg: { st: "Bedford Park Blvd (or Metro-North Botanical Garden)", lines: ["B", "D", "MN"] },
   "bronx-zoo": { st: "West Farms Sq–E Tremont Av", lines: ["2", "5"] },
   rink: { st: "47–50 Sts–Rockefeller Ctr", lines: ["B", "D", "F", "M"] },
@@ -752,6 +757,9 @@ const STATIONS = {
 // mode: walk | subway | train (PATH, Metro-North) | taxi
 const LEGS = {
   "liberty-bagels>nybg": { mode: "subway", lines: ["D"], min: 50, text: "Walk 3 min to 34 St–Herald Sq and take the D uptown to Bedford Park Blvd (about 35 min), then walk 15 min east to the garden. It's Sunday, so the B isn't running. Faster option: Metro-North's Harlem Line from Grand Central to Botanical Garden takes about 20 min and stops at the gate." },
+  "deli>nye-ball": { mode: "walk", lines: [], min: 5, text: "One Times Square is the building at the south end of Times Square, between 42nd and 43rd St." },
+  "nye-ball>ev-pizza": { mode: "subway", lines: ["N", "Q", "R", "W"], min: 25, text: "Take the N, Q, R or W downtown from Times Sq–42 St to 14 St–Union Sq (about 8 min), then walk 12 min east to 1st Ave." },
+  "ev-pizza>bronx-zoo": { mode: "either", lines: ["5"], min: 60, text: "It's a long way. Take the 5 from 14 St–Union Sq to West Farms Sq (or the 4 and switch to the 2 or 5 at 149 St–Grand Concourse), about an hour. Weekend service changes are common, so check Google Maps. A taxi takes about 35–45 min." },
   "nybg>bronx-zoo": { mode: "walk", lines: [], min: 20, text: "Walk about 20 min down to the zoo's Bronx River entrance, or take a 5-min taxi if it's cold." },
   "rink>blue-box": { mode: "walk", lines: [], min: 9, text: "Walk up Fifth Ave to 57th St and look at the store windows on the way." },
   "blue-box>radio-city": { mode: "walk", lines: [], min: 9, text: "Walk down to 50th St and Sixth Ave. Skip taxis here, because holiday traffic barely moves." },
@@ -770,6 +778,7 @@ const LEGS = {
   "exchange-place>bridge": { mode: "train", lines: ["PATH"], min: 30, text: "Take the PATH back to World Trade Center, then walk 15 min to the bridge walkway entrance by City Hall." },
   "bridge>bb-park": { mode: "walk", lines: [], min: 12, text: "At the Brooklyn end, take the stairs down to DUMBO and walk to Pier 1." },
   "bb-park>lightscape": { mode: "subway", lines: ["2", "3"], min: 35, text: "Walk 10 min up to Clark St and take the 2 or 3 to Eastern Pkwy–Brooklyn Museum (about 15 min), then walk 5 min to the garden." },
+  "lightscape>ichiran": { mode: "subway", lines: ["2", "3"], min: 45, text: "Walk 5 min back to Eastern Pkwy–Brooklyn Museum and take the 2 or 3 to Times Sq–42 St (about 35 min), then walk 8 min to 49th St." },
   "statue>rh": { mode: "subway", lines: ["1"], min: 30, text: "The ferry drops you back at Battery Park. Take the 1 from South Ferry to 14 St (about 15 min), then walk 10 min west to 9th Ave." },
   "rh>vessel": { mode: "walk", lines: [], min: 30, text: "Walk the High Line from the Gansevoort St stairs all the way to Hudson Yards." },
   "vessel>edge": { mode: "walk", lines: [], min: 3, text: "Edge is in 30 Hudson Yards, right beside the Vessel." },
