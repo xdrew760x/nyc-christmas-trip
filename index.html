@@ -1431,7 +1431,7 @@ function renderGuide() {
   nowLive.hidden = !(liveNow() && guideView);
   document.getElementById("nowNote").textContent = g.live
     ? "Following your phone's clock. It updates every minute."
-    : liveNow() ? "You're previewing another time." : "From Dec 20 to 24 this follows your phone's clock automatically. Until then, pick a day and time to preview.";
+    : liveNow() ? "You're previewing another time." : "From Dec 20 to 25 this follows your phone's clock automatically. Until then, pick a day and time to preview.";
 
   const picked = routeFor(g.day);
   const stops = picked.length ? picked
