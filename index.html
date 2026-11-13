@@ -40,6 +40,7 @@
   --day22: #b3122e;
   --day23: #7b3a96;
   --day24: #1e4fa3;
+  --day25: #0f766e;
   --dayany: #69716c;
   --shadow: 0 1px 2px rgb(40 30 20 / .06), 0 4px 14px rgb(40 30 20 / .06);
   --map-filter: saturate(.75) contrast(.95);
@@ -52,7 +53,7 @@
   :root:not([data-theme="light"]) {
     --bg: #0e1513; --surface: #16201d; --ink: #eef0ea; --muted: #a4ada6; --line: #2a3632;
     --accent: #ff7d8d; --accent-soft: #3a1d23; --ok: #6fd39a; --ok-soft: #14301f; --gold: #e2b857;
-    --day20: #2a9a5e; --day21: #d4581b; --day22: #d8344d; --day23: #9d55bf; --day24: #3d70d4; --dayany: #7a847e;
+    --day20: #2a9a5e; --day21: #d4581b; --day22: #d8344d; --day23: #9d55bf; --day24: #3d70d4; --day25: #2bb3a3; --dayany: #7a847e;
     --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 6px 18px rgb(0 0 0 / .25);
     --map-filter: invert(.9) hue-rotate(180deg) saturate(.5) brightness(.95);
     color-scheme: dark;
@@ -61,7 +62,7 @@
 :root[data-theme="dark"] {
   --bg: #0e1513; --surface: #16201d; --ink: #eef0ea; --muted: #a4ada6; --line: #2a3632;
   --accent: #ff7d8d; --accent-soft: #3a1d23; --ok: #6fd39a; --ok-soft: #14301f; --gold: #e2b857;
-  --day20: #2a9a5e; --day21: #d4581b; --day22: #d8344d; --day23: #9d55bf; --day24: #3d70d4; --dayany: #7a847e;
+  --day20: #2a9a5e; --day21: #d4581b; --day22: #d8344d; --day23: #9d55bf; --day24: #3d70d4; --day25: #2bb3a3; --dayany: #7a847e;
   --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 6px 18px rgb(0 0 0 / .25);
   --map-filter: invert(.9) hue-rotate(180deg) saturate(.5) brightness(.95);
   color-scheme: dark;
@@ -501,7 +502,7 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
 <div class="wrap">
   <header class="hero">
     <div class="hero-top">
-      <div class="eyebrow">New York City · Dec 20 – 24, 2026</div>
+      <div class="eyebrow">New York City · Dec 20 – 25, 2026</div>
       <button type="button" class="ghost" id="themeBtn">Theme: Auto</button>
     </div>
     <h1>NYC Christmas Trip<span class="star" aria-hidden="true">✦</span></h1>
@@ -623,7 +624,8 @@ const DAYS = [
   { id: "dec21", num: "21", title: "Mon, Dec 21", area: "Midtown", hint: "Skate early, the Rockettes after lunch, then Bryant Park, the library and Grand Central on foot.", c: "--day21" },
   { id: "dec22", num: "22", title: "Tue, Dec 22", area: "Lower Manhattan & Brooklyn", hint: "A weekday, so Federal Hall is open. Finish across the bridge at sunset (about 4:30 PM).", c: "--day22" },
   { id: "dec23", num: "23", title: "Wed, Dec 23", area: "Harbor & Hudson Yards", hint: "Statue ferry in the morning, the West Side in the afternoon, dinner cruise from the piers.", c: "--day23" },
-  { id: "dec24", num: "24", title: "Thu, Dec 24", area: "Christmas Eve", hint: "Santaland early, the market and the Nutcracker by Columbus Circle, then St. Patrick's and dessert.", c: "--day24" },
+  { id: "dec24", num: "24", title: "Thu, Dec 24", area: "Christmas Eve", hint: "Santaland early, the Columbus Circle market, a Broadway matinee, then St. Patrick's and dessert at Serendipity.", c: "--day24" },
+  { id: "dec25", num: "25", title: "Fri, Dec 25", area: "Christmas Day", hint: "Most of the city is closed, so it's a slow day: the tree in the morning, dim sum in Chinatown, a walk in Central Park, then Christmas dinner. The subway runs a Sunday schedule and taxis are harder to find.", c: "--day25" },
   { id: "any", num: "+", title: "Anytime", area: "Fit these in", hint: "Flexible stops. Pick a day for any of them to put them on the schedule.", c: "--dayany" },
 ];
 
@@ -669,6 +671,10 @@ const EVENTS = [
   { id: "st-pats", day: "dec24", time: "17:00", name: "St. Patrick's Cathedral", kind: "free", note: "Very busy on Christmas Eve.", url: "https://saintpatrickscathedral.org/" },
   { id: "serendipity", day: "dec24", time: "18:30", name: "Serendipity 3", kind: "food", note: "Frozen hot chocolate. Book on Resy for after 5 PM.", url: "https://resy.com/cities/new-york-ny/venues/serendipity-3?date=2026-12-24&seats=2", book: true },
 
+  { id: "xmas-tree", day: "dec25", time: "09:00", name: "Rockefeller tree on Christmas morning", kind: "free", note: "The tree stays lit all day on Christmas, and the morning is the quietest time to see it. Walk Fifth Ave to see the store windows too.", url: G("Rockefeller Center Christmas tree Christmas Day") },
+  { id: "nom-wah", day: "dec25", time: "11:00", name: "Dim sum at Nom Wah Tea Parlor", kind: "food", note: "A New York Christmas tradition in Chinatown (13 Doyers St). It's packed on Christmas, so go early and expect a wait. Jing Fong is another option nearby.", url: G("Nom Wah Tea Parlor Doyers St") },
+  { id: "central-park", day: "dec25", time: "14:00", name: "Central Park Christmas walk", kind: "free", note: "Gapstow Bridge, the Mall, Bethesda Terrace and Bow Bridge. The rinks open on Christmas when the weather allows, so check Wollman Rink's hours if you want to skate.", url: G("Central Park winter walk Bethesda Terrace Bow Bridge") },
+  { id: "xmas-dinner", day: "dec25", time: "18:00", name: "Christmas dinner", kind: "food", note: "Most restaurants that open on Christmas serve a set menu and fill up early. Book a table by early December. Ask Claude for ideas near the hotel.", url: G("NYC restaurants open Christmas Day 2026 prix fixe"), book: true },
   { id: "esb", day: "any", time: "21:00", name: "Empire State Building", kind: "tickets", note: "Best at night, and it's open late.", url: "https://www.esbnyc.com/buy-tickets" },
   { id: "broadway", day: "any", time: "19:00", name: "A Broadway show", kind: "tickets", note: "Her pick for Christmas Eve instead of the Nutcracker. Look for a 2:00 PM matinee on Thu, Dec 24, since many shows change their schedule that week, so check the show's calendar. Shows run about 2.5 hours, so it ends in time for St. Patrick's.", url: "https://www.broadway.org/shows/" },
   { id: "friends", day: "any", time: "12:00", name: "The FRIENDS Experience", kind: "tickets", note: "Near Union Square.", url: "https://friendstheexperience.com/new-york/" },
@@ -692,7 +698,7 @@ const COORDS = {
   "st-pats": [40.7585, -73.9760], serendipity: [40.7618, -73.9649], esb: [40.7484, -73.9857],
   broadway: [40.7590, -73.9855], friends: [40.7397, -73.9849], staten: [40.7013, -74.0130],
   burger: [40.7267, -73.9844], "ev-pizza": [40.7280, -73.9851],
-  deli: [40.7577, -73.9878], "nye-ball": [40.7564, -73.9865],
+  deli: [40.7577, -73.9878], "xmas-tree": [40.7587, -73.9787], "nom-wah": [40.7143, -73.9982], "central-park": [40.7680, -73.9718], "nye-ball": [40.7564, -73.9865],
 };
 
 /* ---------- getting around ---------- */
@@ -712,6 +718,9 @@ const bullets = lines => lines.map(l =>
 // Nearest station to each stop.
 const STATIONS = {
   "liberty-bagels": { st: "34 St–Penn Station", lines: ["1", "2", "3", "A", "C", "E"] },
+  "xmas-tree": { st: "47–50 Sts–Rockefeller Ctr", lines: ["B", "D", "F", "M"] },
+  "nom-wah": { st: "Canal St", lines: ["J", "Z", "N", "Q", "6"] },
+  "central-park": { st: "5 Av/59 St", lines: ["N", "R", "W"] },
   deli: { st: "Times Sq–42 St", lines: ["1", "2", "3", "7", "N", "Q", "R", "W", "S"] },
   "nye-ball": { st: "Times Sq–42 St", lines: ["1", "2", "3", "7", "N", "Q", "R", "W", "S"] },
   nybg: { st: "Bedford Park Blvd (or Metro-North Botanical Garden)", lines: ["B", "D", "MN"] },
@@ -784,6 +793,8 @@ const LEGS = {
   "vessel>edge": { mode: "walk", lines: [], min: 3, text: "Edge is in 30 Hudson Yards, right beside the Vessel." },
   "edge>cruise": { mode: "taxi", lines: [], min: 8, text: "Take a taxi or Uber about 7 min to Chelsea Piers, which is easier when you're dressed for dinner. Or walk about 20 min down along the river." },
   "macys>columbus": { mode: "subway", lines: ["B", "D"], min: 15, text: "Take the B or D uptown from 34 St–Herald Sq to 59 St–Columbus Circle (about 10 min)." },
+  "xmas-tree>nom-wah": { mode: "subway", lines: ["F"], min: 30, text: "Take the F downtown from 47–50 Sts–Rockefeller Ctr to East Broadway (about 15 min), then walk 8 min to Doyers St. It's a Sunday schedule, so trains come less often." },
+  "nom-wah>central-park": { mode: "subway", lines: ["N", "Q", "R", "W"], min: 30, text: "Walk 8 min to Canal St and take the N, Q, R or W uptown to 5 Av/59 St (about 15 min). The park entrance is across the street." },
   "columbus>broadway": { mode: "subway", lines: ["1"], min: 15, text: "Take the 1 downtown from 59 St–Columbus Circle to Times Sq–42 St (two stops), or walk about 20 min down Broadway." },
   "broadway>st-pats": { mode: "walk", lines: [], min: 12, text: "Walk east to Fifth Ave and up to 50th St. Holiday crowds are thick here, so walking beats a taxi." },
   "columbus>nutcracker": { mode: "walk", lines: [], min: 8, text: "Walk up Broadway to Lincoln Center at 63rd St." },
