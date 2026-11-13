@@ -22,7 +22,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Lexend:wght@400;600;700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 :root {
   --bg: #f6f2eb;
@@ -446,6 +446,92 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
 @media (prefers-reduced-motion: reduce) {
   .mapcard, body.sheet-open .mapcard { transition: none; }
 }
+
+/* ---------- review mode (large, calm, one place per screen) ---------- */
+.decide-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn.review-open { background: var(--ok); border-color: var(--ok); color: var(--surface); font-size: 16px; height: 52px; padding: 0 20px; }
+.rv-chip { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1.5px solid currentColor; white-space: nowrap; }
+.rv-chip.keep { color: var(--ok); } .rv-chip.maybe { color: var(--gold); } .rv-chip.pass { color: var(--muted); }
+.rv-chip.differ { background: var(--accent-soft); }
+
+.review {
+  position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
+  background: var(--bg); color: var(--ink);
+  font-family: "Lexend", var(--font-body); font-size: 20px; line-height: 1.6; letter-spacing: .02em; word-spacing: .06em;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.review[hidden] { display: none !important; }
+.rv-top { display: flex; align-items: center; gap: 12px; padding: 10px max(16px, env(safe-area-inset-left, 0px)) 10px max(16px, env(safe-area-inset-right, 0px)); border-bottom: 2px solid var(--line); background: var(--surface); }
+.rv-close { font: inherit; font-size: 17px; font-weight: 600; height: 48px; padding: 0 16px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; flex: none; }
+.rv-progress { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.rv-progress span { font-size: 16px; font-weight: 600; }
+.rv-bar { height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.rv-bar i { display: block; height: 100%; background: var(--ok); width: 0; transition: width .25s; }
+.rv-main { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 20px max(18px, env(safe-area-inset-left, 0px)) 28px max(18px, env(safe-area-inset-right, 0px)); }
+.rv-slide { max-width: 640px; margin: 0 auto; display: grid; gap: 18px; }
+.rv-slide h2, .rv-slide h3 { font-family: "Lexend", var(--font-body); margin: 0; letter-spacing: .01em; }
+.rv-when { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; color: var(--ink); }
+.rv-when i { font-style: normal; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--c); color: #fff; font-size: 17px; flex: none; }
+.rv-name { font-size: 30px; line-height: 1.25; font-weight: 700; }
+.rv-name:focus { outline: none; }
+.rv-tag { margin: -8px 0 0; font-size: 16px; font-weight: 600; color: var(--muted); }
+.rv-note { margin: 0; font-size: 19px; max-width: 60ch; }
+.rv-box { border-radius: 16px; padding: 16px; display: grid; gap: 10px; border: 2px solid var(--line); background: var(--surface); }
+.rv-box h3 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.rv-badge { justify-self: start; display: inline-flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 700; padding: 6px 18px; border-radius: 999px; color: var(--surface); }
+.rv-badge.keep { background: var(--ok); } .rv-badge.maybe { background: var(--gold); } .rv-badge.pass { background: var(--muted); }
+.rv-badge.none { font-size: 18px; font-weight: 600; border-radius: 12px; background: transparent; color: var(--muted); border: 2px dashed var(--line); }
+.rv-memo { margin: 0; font-size: 19px; padding: 12px 14px; border-radius: 12px; background: var(--bg); border-left: 5px solid var(--gold); }
+.rv-memo b { display: block; font-size: 15px; color: var(--muted); }
+.rv-btns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.rv-btn {
+  font: inherit; font-weight: 700; font-size: 20px; cursor: pointer; min-height: 84px; border-radius: 16px;
+  border: 3px solid var(--bc); background: var(--surface); color: var(--ink);
+  display: grid; place-items: center; align-content: center; gap: 2px; padding: 6px;
+}
+.rv-btn span { font-size: 28px; line-height: 1; color: var(--bc); }
+.rv-btn.keep { --bc: var(--ok); } .rv-btn.maybe { --bc: var(--gold); } .rv-btn.pass { --bc: var(--muted); }
+.rv-btn[aria-checked="true"] { background: var(--bc); color: var(--surface); box-shadow: 0 0 0 4px color-mix(in oklab, var(--bc) 30%, transparent); }
+.rv-btn[aria-checked="true"] span { color: var(--surface); }
+.rv-btn:focus-visible { outline: 4px solid var(--accent); outline-offset: 3px; }
+.rv-btn:disabled { opacity: .6; cursor: default; }
+.rv-notelabel { font-size: 16px; font-weight: 600; color: var(--muted); }
+.rv-slide textarea {
+  font: inherit; font-size: 18px; width: 100%; min-height: 64px; resize: vertical; padding: 10px 12px;
+  border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.rv-saved { margin: 0; font-size: 16px; font-weight: 700; color: var(--ok); min-height: 1.6em; }
+.rv-foot {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center;
+  padding: 10px max(16px, env(safe-area-inset-left, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  border-top: 2px solid var(--line); background: var(--surface);
+}
+.rv-nav { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; line-height: 1; font: inherit; font-weight: 700; font-size: 19px; height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; padding: 0 14px; }
+.rv-nav.next { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.rv-nav.next.ready { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.rv-nav:disabled { opacity: .35; cursor: default; }
+.rv-speak { display: inline-flex; align-items: center; justify-content: center; gap: 6px; line-height: 1.2; font: inherit; font-weight: 600; font-size: 16px; height: 60px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; padding: 0 12px; }
+.rv-speak[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.rv-intro p { margin: 0; font-size: 20px; }
+.rv-steps { margin: 0; padding-left: 1.4em; display: grid; gap: 8px; font-size: 20px; }
+.rv-big { font: inherit; font-weight: 700; font-size: 21px; min-height: 64px; border-radius: 16px; border: 0; background: var(--ok); color: var(--surface); cursor: pointer; padding: 0 20px; width: 100%; }
+.rv-big.alt { background: var(--bg); color: var(--ink); border: 2px solid var(--line); }
+.rv-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.rv-list button { font: inherit; text-align: left; width: 100%; cursor: pointer; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); display: grid; gap: 4px; }
+.rv-list b { font-size: 19px; }
+.rv-list span { font-size: 16px; color: var(--muted); }
+.rv-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.rv-stats div { background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 12px; display: grid; }
+.rv-stats b { font-size: 30px; line-height: 1.1; }
+.rv-stats span { font-size: 15px; color: var(--muted); }
+@media (max-width: 420px) {
+  .review { font-size: 19px; }
+  .rv-name { font-size: 27px; }
+  .rv-btn { font-size: 18px; min-height: 80px; }
+  .rv-nav { font-size: 17px; padding: 0 8px; }
+  .rv-speak { font-size: 14px; padding: 0 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .rv-bar i { transition: none; } }
 /* ---------- decide-together form ---------- */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .decide { background: var(--surface); border: 2px solid var(--ok); border-radius: 18px; padding: 16px; display: grid; gap: 12px; box-shadow: var(--shadow); }
@@ -540,7 +626,7 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
     <div class="decide-top">
       <div><h2 id="decideHead">Decide together</h2>
         <p>Answer every place Keep, Maybe or Pass. Come back to the Maybes at the end.</p></div>
-      <button type="button" class="btn primary" id="nextBtn">Next to decide &rarr;</button>
+      <div class="decide-actions"><button type="button" class="btn review-open" id="reviewOpen">&#9654; Review mode: one at a time</button><button type="button" class="btn primary" id="nextBtn">Next to decide &rarr;</button></div>
     </div>
     <div class="meter" id="meter" role="progressbar" aria-label="Places decided" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i class="mk"></i><i class="mm"></i><i class="mp"></i></div>
     <p class="decide-count" id="decideCount" aria-live="polite"></p>
@@ -614,6 +700,18 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
     <ul id="tix"></ul>
     <p class="tip">If we pick 3 or more paid attractions (Empire State Building, Statue of Liberty, Edge, Vessel), compare against the <a href="https://gocity.com/en/new-york/passes" target="_blank" rel="noopener">Go City New York Pass</a> before buying separately.</p>
   </section>
+</div>
+<div class="review" id="review" role="dialog" aria-modal="true" aria-label="Review mode" hidden>
+  <div class="rv-top">
+    <button type="button" class="rv-close" id="rvClose">&#10005; Close</button>
+    <div class="rv-progress"><span id="rvCount"></span><div class="rv-bar"><i id="rvBar"></i></div></div>
+  </div>
+  <div class="rv-main" id="rvMain"><div class="rv-slide" id="rvBody"></div></div>
+  <div class="rv-foot" id="rvFoot">
+    <button type="button" class="rv-nav" id="rvBack">&larr; Back</button>
+    <button type="button" class="rv-speak" id="rvSpeak" aria-pressed="false">&#128264; Read to me</button>
+    <button type="button" class="rv-nav next" id="rvNext">Next &rarr;</button>
+  </div>
 </div>
 <div class="backdrop" id="backdrop"></div>
 <button type="button" class="mapfab" id="mapFab" aria-label="Open the route map"><i aria-hidden="true">⌖</i>Map <small id="fabDay">Dec 20</small></button>
@@ -895,7 +993,7 @@ let readOnly = false;
 
 const stateOf = id => {
   const e = byId[id], p = picks[id] || {};
-  return { dec: DECS.has(p.dec) ? p.dec : (p.go ? "keep" : ""), go: !!p.go, skip: !!p.skip, day: p.day || e.day, time: p.time || e.time, a: !!p.a, b: !!p.b, memo: p.memo || "" };
+  return { dec: DECS.has(p.dec) ? p.dec : (p.go ? "keep" : ""), go: !!p.go, skip: !!p.skip, day: p.day || e.day, time: p.time || e.time, a: !!p.a, b: !!p.b, memo: p.memo || "", review: DECS.has(p.review) ? p.review : "", reviewNote: p.reviewNote || "" };
 };
 
 /* ---------- build ---------- */
@@ -927,7 +1025,7 @@ for (const e of EVENTS) {
     <label class="timebox"><span class="tval" aria-hidden="true"></span><input type="time" class="time" id="time-${e.id}" aria-label="Time for ${e.name}"></label>
     <div class="body">
       <div class="title-row"><span class="name"><a href="${e.url}" target="_blank" rel="noopener">${e.name}</a></span>
-        <span class="tag ${e.kind}">${tag}</span></div>
+        <span class="tag ${e.kind}">${tag}</span><span class="rv-chip" id="rv-${e.id}" hidden></span></div>
       ${e.note ? `<p class="note">${e.note}</p>` : ""}
       <fieldset class="answer"><legend class="sr">Our answer for ${e.name}</legend>
         <label><input type="radio" class="ans" name="dec-${e.id}" value="keep"><span>&#10003; Keep</span></label>
@@ -958,6 +1056,7 @@ function legEl(key, html, kind) {
   return el;
 }
 function render() {
+  if (typeof renderReviewChips === "function") renderReviewChips();
   document.querySelectorAll('.vote[data-who="a"]').forEach(b => b.textContent = names.a || "Planner 1");
   document.querySelectorAll('.vote[data-who="b"]').forEach(b => b.textContent = names.b || "Planner 2");
   const active = document.activeElement;
@@ -1684,5 +1783,200 @@ document.getElementById("shareLinkBtn").addEventListener("click", async () => {
     await navigator.clipboard.writeText(url); st.textContent = "Link copied. Text it to the other phone.";
   } catch (e) { if (e?.name !== "AbortError") st.textContent = "Copy this link from the address bar: " + url; }
 });
+</script>
+<script>
+/* ---------- review mode: Drew goes through her answers one place at a time ---------- */
+const RV_ICON = { keep: "✓", maybe: "?", pass: "✕" };
+const RV_WORD = { keep: "Keep", maybe: "Maybe", pass: "Pass" };
+const rvDay = Object.fromEntries(DAYS.map(d => [d.id, d]));
+const rvTime = t => { const [h, m] = t.split(":").map(Number); return `${(h % 12) || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
+const rvEsc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const rvWhen = s => s.day === "any" ? "Any day" : `${rvDay[s.day].title} · ${rvTime(s.time)}`;
+
+function renderReviewChips() {
+  for (const e of EVENTS) {
+    const el = document.getElementById("rv-" + e.id); if (!el) continue;
+    const s = stateOf(e.id);
+    el.hidden = !s.review;
+    if (!s.review) continue;
+    el.className = "rv-chip " + s.review + (s.review !== s.dec ? " differ" : "");
+    el.textContent = `${names.a || "Drew"}: ${RV_ICON[s.review]} ${RV_WORD[s.review]}`;
+  }
+}
+
+(() => {
+  const ov = document.getElementById("review"), body = document.getElementById("rvBody"), main = document.getElementById("rvMain");
+  const foot = document.getElementById("rvFoot"), back = document.getElementById("rvBack"), next = document.getElementById("rvNext");
+  const speakBtn = document.getElementById("rvSpeak"), count = document.getElementById("rvCount"), bar = document.getElementById("rvBar");
+  const canSpeak = "speechSynthesis" in window;
+  if (!canSpeak) speakBtn.hidden = true;
+  let order = [], i = 0, view = "intro", lastFocus = null, noteTimer = null;
+
+  const stopSpeaking = () => { if (canSpeak) speechSynthesis.cancel(); speakBtn.setAttribute("aria-pressed", "false"); };
+  function say(text) {
+    if (!canSpeak) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.9;
+    u.onend = u.onerror = () => speakBtn.setAttribute("aria-pressed", "false");
+    speakBtn.setAttribute("aria-pressed", "true");
+    speechSynthesis.speak(u);
+  }
+
+  function progress() {
+    const done = order.filter(id => stateOf(id).review).length;
+    count.textContent = view === "slide" ? `Place ${i + 1} of ${order.length}` : `${done} of ${order.length} done`;
+    bar.style.width = (done / Math.max(order.length, 1) * 100) + "%";
+  }
+
+  function showIntro() {
+    view = "intro"; stopSpeaking(); foot.hidden = true;
+    const done = order.filter(id => stateOf(id).review).length;
+    body.innerHTML = `<div class="rv-intro rv-slide">
+      <h2 class="rv-name" id="rvTitle" tabindex="-1">Review her picks</h2>
+      <ol class="rv-steps">
+        <li>You see one place at a time.</li>
+        <li>Read her answer and her note.</li>
+        <li>Tap <b>Keep</b>, <b>Maybe</b> or <b>Pass</b>.</li>
+        <li>Tap <b>Next</b> to go on.</li>
+      </ol>
+      <p>Your answers are saved next to hers. Nothing she picked gets changed.</p>
+      ${canSpeak ? `<p>Tap <b>&#128264; Read to me</b> on any place to hear it out loud.</p>` : ""}
+      <button type="button" class="rv-big" data-act="start">${done ? `Keep going (${order.length - done} left)` : `Start (${order.length} places)`}</button>
+      ${done ? `<button type="button" class="rv-big alt" data-act="restart">Start from the first place</button>` : ""}
+    </div>`;
+    progress(); main.scrollTop = 0;
+    document.getElementById("rvTitle").focus();
+  }
+
+  function showSlide(n) {
+    view = "slide"; stopSpeaking(); foot.hidden = false;
+    i = Math.max(0, Math.min(order.length - 1, n));
+    const id = order[i], e = byId[id], s = stateOf(id), d = rvDay[s.day];
+    const tag = e.book ? "Needs a reservation" : { free: "Free", tickets: "Needs tickets", food: "Food" }[e.kind];
+    const her = s.dec ? `<span class="rv-badge ${s.dec}"><span aria-hidden="true">${RV_ICON[s.dec]}</span>${RV_WORD[s.dec]}</span>`
+                      : `<span class="rv-badge none">She didn't answer this one</span>`;
+    body.innerHTML = `
+      <div class="rv-when" style="--c:var(${d.c})"><i aria-hidden="true">${d.num}</i>${rvWhen(s)}</div>
+      <h2 class="rv-name" id="rvTitle" tabindex="-1">${rvEsc(e.name)}</h2>
+      <p class="rv-tag">${tag}</p>
+      ${e.note ? `<p class="rv-note">${rvEsc(e.note)}</p>` : ""}
+      <section class="rv-box"><h3>Her answer</h3>${her}
+        ${s.memo ? `<p class="rv-memo"><b>Her note</b>${rvEsc(s.memo)}</p>` : ""}</section>
+      <section class="rv-box"><h3 id="rvYouHead">Your answer</h3>
+        <div class="rv-btns" role="radiogroup" aria-labelledby="rvYouHead">
+          ${["keep", "maybe", "pass"].map(v => `<button type="button" role="radio" class="rv-btn ${v}" data-v="${v}" aria-checked="${s.review === v}" ${readOnly ? "disabled" : ""}><span aria-hidden="true">${RV_ICON[v]}</span>${RV_WORD[v]}</button>`).join("")}
+        </div>
+        <p class="rv-saved" id="rvSaved" aria-live="polite">${s.review ? "Saved" : ""}</p>
+        <label class="rv-notelabel" for="rvNote">Your note (you can skip this)</label>
+        <textarea id="rvNote" maxlength="200" ${readOnly ? "disabled" : ""}>${rvEsc(s.reviewNote)}</textarea>
+      </section>`;
+    back.disabled = i === 0;
+    next.textContent = i === order.length - 1 ? "Finish →" : "Next →";
+    next.classList.toggle("ready", !!s.review);
+    progress(); main.scrollTop = 0;
+    document.getElementById("rvTitle").focus();
+  }
+
+  function showDone() {
+    view = "done"; stopSpeaking(); foot.hidden = true;
+    const rows = order.map((id, n) => ({ id, n, s: stateOf(id) }));
+    const reviewed = rows.filter(r => r.s.review);
+    const differ = reviewed.filter(r => r.s.review !== r.s.dec);
+    const left = rows.filter(r => !r.s.review);
+    const ans = v => v ? `${RV_ICON[v]} ${RV_WORD[v]}` : "no answer";
+    const item = r => `<li><button type="button" data-jump="${r.n}"><b>${rvEsc(byId[r.id].name)}</b><span>Her: ${ans(r.s.dec)} · You: ${ans(r.s.review)}</span></button></li>`;
+    body.innerHTML = `<div class="rv-slide">
+      <h2 class="rv-name" id="rvTitle" tabindex="-1">${left.length ? "Nice work" : "All done!"}</h2>
+      <div class="rv-stats">
+        <div><b>${reviewed.length - differ.length}</b><span>you agree</span></div>
+        <div><b>${differ.length}</b><span>to talk about</span></div>
+        <div><b>${left.length}</b><span>not done yet</span></div>
+      </div>
+      ${differ.length ? `<h3>Talk about these together</h3><ul class="rv-list">${differ.map(item).join("")}</ul>` : `<p>You agree on everything you answered.</p>`}
+      ${left.length ? `<h3>Not done yet</h3><ul class="rv-list">${left.map(item).join("")}</ul>` : ""}
+      <button type="button" class="rv-big" data-act="close">Close</button>
+    </div>`;
+    progress(); main.scrollTop = 0;
+    document.getElementById("rvTitle").focus();
+  }
+
+  function open() {
+    order = inOrder().map(x => x.e.id);
+    lastFocus = document.activeElement;
+    ov.hidden = false; document.body.style.overflow = "hidden";
+    showIntro();
+  }
+  function close() {
+    stopSpeaking(); flushNote();
+    ov.hidden = true; document.body.style.overflow = "";
+    try { lastFocus?.focus(); } catch {}
+  }
+  const go = d => {
+    flushNote();
+    if (i + d >= order.length) return showDone();
+    showSlide(i + d);
+  };
+  function answer(v) {
+    if (readOnly) return;
+    const id = order[i];
+    change(id, { review: v });
+    body.querySelectorAll(".rv-btn").forEach(b => b.setAttribute("aria-checked", b.dataset.v === v));
+    document.getElementById("rvSaved").textContent = `Saved: ${RV_WORD[v]}`;
+    next.classList.add("ready");
+    progress();
+  }
+  function flushNote() {
+    if (!noteTimer) return;
+    clearTimeout(noteTimer); noteTimer = null;
+    const id = order[i]; store?.save(id, picks[id]);
+  }
+  function readSlide() {
+    if (speakBtn.getAttribute("aria-pressed") === "true") return stopSpeaking();
+    const id = order[i], e = byId[id], s = stateOf(id);
+    say([rvWhen(s).replace("·", ","), e.name, e.note,
+      `Her answer: ${s.dec ? RV_WORD[s.dec] : "she did not answer"}.`,
+      s.memo ? `Her note: ${s.memo}` : "",
+      s.review ? `Your answer: ${RV_WORD[s.review]}.` : ""].filter(Boolean).join(". ").replace(/\.\s*\./g, "."));
+  }
+
+  document.getElementById("reviewOpen").addEventListener("click", open);
+  document.getElementById("rvClose").addEventListener("click", close);
+  back.addEventListener("click", () => go(-1));
+  next.addEventListener("click", () => go(1));
+  speakBtn.addEventListener("click", readSlide);
+  body.addEventListener("click", ev => {
+    const b = ev.target.closest(".rv-btn"); if (b) return answer(b.dataset.v);
+    const j = ev.target.closest("[data-jump]"); if (j) return showSlide(+j.dataset.jump);
+    const a = ev.target.closest("[data-act]"); if (!a) return;
+    if (a.dataset.act === "close") return close();
+    if (a.dataset.act === "restart") return showSlide(0);
+    const first = order.findIndex(id => !stateOf(id).review);
+    first === -1 ? showDone() : showSlide(first);
+  });
+  body.addEventListener("input", ev => {
+    if (ev.target.id !== "rvNote" || readOnly) return;
+    const id = order[i];
+    picks[id] = { ...stateOf(id), reviewNote: ev.target.value };
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(() => { noteTimer = null; store?.save(id, picks[id]); renderReviewChips(); }, 700);
+  });
+  ov.addEventListener("keydown", ev => {
+    if (ev.key === "Escape") { ev.preventDefault(); return close(); }
+    if (view !== "slide" || ev.target.closest("textarea, input")) return;
+    if (ev.key === "ArrowRight") go(1);
+    else if (ev.key === "ArrowLeft" && i > 0) go(-1);
+    else if ({ k: 1, m: 1, p: 1 }[ev.key.toLowerCase()]) answer({ k: "keep", m: "maybe", p: "pass" }[ev.key.toLowerCase()]);
+  });
+  // swipe left / right between places
+  let sx = null, sy = 0;
+  main.addEventListener("pointerdown", ev => { if (view === "slide" && !ev.target.closest("textarea, button")) { sx = ev.clientX; sy = ev.clientY; } });
+  main.addEventListener("pointerup", ev => {
+    if (sx === null) return;
+    const dx = ev.clientX - sx, dy = ev.clientY - sy; sx = null;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) go(1); else if (i > 0) go(-1); }
+  });
+  renderReviewChips();
+})();
 </script>
 </body></html>
