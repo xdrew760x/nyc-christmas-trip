@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only someone who knows a trip's long secret code (from the shared link) can use it.
+    // Nothing allows listing /trips, so codes can't be discovered.
+    match /trips/{trip}/{rest=**} {
+      allow read, write: if trip.size() >= 20 && trip.size() <= 64;
+    }
+  }
+}
