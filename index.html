@@ -670,7 +670,7 @@ const EVENTS = [
   { id: "serendipity", day: "dec24", time: "18:30", name: "Serendipity 3", kind: "food", note: "Frozen hot chocolate. Book on Resy for after 5 PM.", url: "https://resy.com/cities/new-york-ny/venues/serendipity-3?date=2026-12-24&seats=2", book: true },
 
   { id: "esb", day: "any", time: "21:00", name: "Empire State Building", kind: "tickets", note: "Best at night, and it's open late.", url: "https://www.esbnyc.com/buy-tickets" },
-  { id: "broadway", day: "any", time: "19:00", name: "A Broadway show", kind: "tickets", note: "Evening or matinee.", url: "https://www.broadway.org/shows/" },
+  { id: "broadway", day: "any", time: "19:00", name: "A Broadway show", kind: "tickets", note: "Her pick for Christmas Eve instead of the Nutcracker. Look for a 2:00 PM matinee on Thu, Dec 24, since many shows change their schedule that week, so check the show's calendar. Shows run about 2.5 hours, so it ends in time for St. Patrick's.", url: "https://www.broadway.org/shows/" },
   { id: "friends", day: "any", time: "12:00", name: "The FRIENDS Experience", kind: "tickets", note: "Near Union Square.", url: "https://friendstheexperience.com/new-york/" },
   { id: "staten", day: "any", time: "08:00", name: "Staten Island Ferry", kind: "free", note: "Free, no ticket, runs 24/7 from Whitehall (South Ferry) and passes right by the Statue of Liberty. About 25 min each way. Ferry comparison: the NYC Ferry also has a St. George route to Staten Island, but it costs $5 a ride (since Oct 2026), so the Staten Island Ferry is the cheapest way to see the Statue. Only Statue City Cruises (Dec 23) actually stops at Liberty and Ellis Island.", url: "https://www.siferry.com/" },
   { id: "burger", day: "any", time: "12:30", name: "7th Street Burger", kind: "food", note: "The original is on E 7th St, around the corner from East Village Pizza. Other locations too.", url: G("7th Street Burger locations") },
@@ -784,6 +784,8 @@ const LEGS = {
   "vessel>edge": { mode: "walk", lines: [], min: 3, text: "Edge is in 30 Hudson Yards, right beside the Vessel." },
   "edge>cruise": { mode: "taxi", lines: [], min: 8, text: "Take a taxi or Uber about 7 min to Chelsea Piers, which is easier when you're dressed for dinner. Or walk about 20 min down along the river." },
   "macys>columbus": { mode: "subway", lines: ["B", "D"], min: 15, text: "Take the B or D uptown from 34 St–Herald Sq to 59 St–Columbus Circle (about 10 min)." },
+  "columbus>broadway": { mode: "subway", lines: ["1"], min: 15, text: "Take the 1 downtown from 59 St–Columbus Circle to Times Sq–42 St (two stops), or walk about 20 min down Broadway." },
+  "broadway>st-pats": { mode: "walk", lines: [], min: 12, text: "Walk east to Fifth Ave and up to 50th St. Holiday crowds are thick here, so walking beats a taxi." },
   "columbus>nutcracker": { mode: "walk", lines: [], min: 8, text: "Walk up Broadway to Lincoln Center at 63rd St." },
   "nutcracker>st-pats": { mode: "subway", lines: ["B", "D"], min: 20, text: "Walk 5 min to 59 St–Columbus Circle and take the B or D two stops to 47–50 Sts, then walk one block to Fifth Ave. Don't take a taxi, because Christmas Eve traffic in Midtown is at its worst." },
   "st-pats>serendipity": { mode: "walk", lines: [], min: 20, text: "Walk up Fifth or Madison Ave and see the window displays, or take a taxi for about 10 min if it's cold." },
