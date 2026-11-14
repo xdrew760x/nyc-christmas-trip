@@ -808,10 +808,10 @@ const EVENTS = [
   { id: "lightscape", day: "dec22", time: "17:45", name: "Lightscape, Brooklyn Botanic Garden", kind: "tickets", note: "About 20 minutes by subway from the park.", url: "https://events.leapevents.com/tickets/lightscape2026/listing/" },
 
   { id: "statue", day: "dec23", time: "09:00", name: "Statue of Liberty & Ellis Island", kind: "tickets", note: "Take an early ferry from Battery Park. Plan on 4–5 hours.", url: "https://statuecitycruises.com/tickets" },
-  { id: "rh", day: "dec23", time: "14:45", name: "RH Rooftop lunch", kind: "food", note: "Meatpacking District, near the High Line. Book on OpenTable.", url: "https://www.opentable.com/r/rh-rooftop-restaurant-at-rh-new-york", book: true },
-  { id: "vessel", day: "dec23", time: "16:45", name: "The Vessel, Hudson Yards", kind: "tickets", note: "Walk up the High Line from lunch.", url: G("Vessel Hudson Yards tickets") },
-  { id: "edge", day: "dec23", time: "17:30", name: "Edge observation deck", kind: "tickets", note: "Just after sunset, when the city lights come on. Reviewers say night is as good as sunset and cheaper.", url: "https://www.edgenyc.com/get-tickets/" },
-  { id: "little-spain", day: "dec23", time: "18:45", name: "Mercado Little Spain, Hudson Yards", kind: "food", note: "José Andrés' Spanish food hall at 10 Hudson Yards, right below Edge. Walk-in counters with tapas, paella, jamón and churros, so no reservation is needed. Open until about 9–10 PM. Backup: Chelsea Market, a 15-min walk down 10th Ave.", url: "https://littlespain.com/" },
+  { id: "rh", day: "dec23", time: "16:00", name: "RH Rooftop lunch", kind: "food", note: "Meatpacking District, near the High Line. Book on OpenTable.", url: "https://www.opentable.com/r/rh-rooftop-restaurant-at-rh-new-york", book: true },
+  { id: "vessel", day: "dec23", time: "17:45", name: "The Vessel, Hudson Yards", kind: "tickets", note: "Walk up the High Line from lunch.", url: G("Vessel Hudson Yards tickets") },
+  { id: "edge", day: "dec23", time: "18:30", name: "Edge observation deck", kind: "tickets", note: "After dark, when the city lights are on. Reviewers say night is as good as sunset and cheaper.", url: "https://www.edgenyc.com/get-tickets/" },
+  { id: "little-spain", day: "dec23", time: "19:45", name: "Mercado Little Spain, Hudson Yards", kind: "food", note: "José Andrés' Spanish food hall at 10 Hudson Yards, right below Edge. Walk-in counters with tapas, paella, jamón and churros, so no reservation is needed. Open until about 9–10 PM. Backup: Chelsea Market, a 15-min walk down 10th Ave.", url: "https://littlespain.com/" },
   { id: "cruise", day: "dec23", time: "19:00", name: "Holiday yacht dinner with live jazz", kind: "tickets", note: "Most leave from Chelsea Piers, about 15 minutes from Hudson Yards.", url: G("NYC holiday jazz dinner cruise December") },
 
   { id: "macys", day: "dec24", time: "09:00", name: "Macy's Santaland", kind: "tickets", note: "Free, but reservations are required. They open around Dec 18.", url: G("Macy's Santaland reservations"), book: true },
@@ -1073,7 +1073,7 @@ const BOOK_URL = {
   "vessel": "https://www.vesselnyc.com/",
   "macys": "https://santalandnewyorkmacys.showare.com/",
   "blue-box": "https://resy.com/cities/new-york-ny/venues/bluebox-cafe-by-daniel-boulud?date=2026-12-21&seats=2",
-  "rh": "https://www.opentable.com/r/rh-rooftop-restaurant-at-rh-new-york?dateTime=2026-12-23T14%3A45&covers=2",
+  "rh": "https://www.opentable.com/r/rh-rooftop-restaurant-at-rh-new-york?dateTime=2026-12-23T16%3A00&covers=2",
 };
 const bookUrl = e => BOOK_URL[e.id] || e.url;
 // When to book and what to pick, for the booking list. Approximate; check the site.
@@ -1093,9 +1093,9 @@ const BOOK_TIP = {
   "rink": "Pick 7:00 AM on Mon, Dec 21 (7:00–7:50 AM was $120 for two, the cheapest and least crowded). Afternoons and evenings were $188–228.",
   "lightscape": "Timed tickets, about $35–45 each. Pick 5:45 PM. Evenings near Christmas sell out.",
   "statue": "Book the first ferry, about 9:00 AM, from Battery Park. About $25–30 each. Pedestal and crown tickets sell out first.",
-  "rh": "Pick 2:45 PM. 2:00 to 3:00 PM on Wed, Dec 23 for two were open (Nov 13).",
+  "rh": "Late lunch after the Statue of Liberty. Pick 4:00 PM (3:30 to 4:30 PM for two were open on Nov 13).",
   "vessel": "Timed tickets, about $10–15 each. Edge sells an Edge + Vessel bundle that saves 10%.",
-  "edge": "From $44 each. Pick 5:30 PM, right after sunset, when it's cheaper than the sunset slots. The Edge + Vessel bundle saves 10%.",
+  "edge": "From $44 each. Pick 6:30 PM. It's dark by then, so you see the city lights, and it's cheaper than the sunset slots. The Edge + Vessel bundle saves 10%.",
   "macys": "Free. Times come out 7 days ahead at 6:30 AM Eastern, so Dec 24 opens Thu, Dec 17 at 6:30 AM.",
   "serendipity": "6:30 PM on Thu, Dec 24 for two was open (Nov 13).",
 };
