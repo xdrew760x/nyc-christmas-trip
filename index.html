@@ -1032,6 +1032,8 @@ function legHTML(prev, e, s) {
 const hotelLink = () => names.hotel ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(names.hotel)}&travelmode=transit` : "";
 // Where you'd be coming from: the stop we kept just before this one on the same day,
 // or the hotel for the first stop of the day (and for "Anytime" places).
+// "Dinner at Ponte Vecchio, Bay Ridge" -> "Ponte Vecchio"
+const shortName = id => byId[id].name.replace(/^.*?dinner at /i, "").split(/,| at /)[0];
 function originFor(id) {
   const s = stateOf(id);
   if (s.day !== "any") {
@@ -1043,7 +1045,7 @@ function originFor(id) {
       if (p.time === s.time && EVENTS.indexOf(e) > EVENTS.indexOf(byId[id])) continue;
       if (!best || p.time >= best.time) best = { id: e.id, time: p.time };
     }
-    if (best) return { id: best.id, label: byId[best.id].name.split(/,| at /)[0] };
+    if (best) return { id: best.id, label: shortName(best.id) };
   }
   return names.hotel ? { hotel: names.hotel, label: "the hotel" } : null;
 }
@@ -2054,7 +2056,7 @@ function renderReviewChips() {
       ${leg ? row("🚶", `Getting here from ${rvEsc(byId[prevId].name)}`, `${MODE_LABEL[leg.mode] || ""}${leg.min ? `, about ${leg.min} min` : ""}. ${rvEsc(leg.text)}`) : ""}
       ${miniMap(id)}
       <div class="rv-links">
-        ${dir ? `<a class="rv-link" href="${dir}" target="_blank" rel="noopener">➤ ${prevId && COORDS[prevId] ? "Directions from " + rvEsc(byId[prevId].name.split(/,| at /)[0]) : rvEsc(dirInfo.text)}</a>` : ""}
+        ${dir ? `<a class="rv-link" href="${dir}" target="_blank" rel="noopener">➤ ${prevId && COORDS[prevId] ? "Directions from " + rvEsc(shortName(prevId)) : rvEsc(dirInfo.text)}</a>` : ""}
         <a class="rv-link" href="${hours}" target="_blank" rel="noopener">🕒 Check hours</a>
         <a class="rv-link" href="${e.url}" target="_blank" rel="noopener">ℹ️ Website</a>
       </div>
