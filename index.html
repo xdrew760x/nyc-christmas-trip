@@ -317,6 +317,15 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
 .bk-conf { flex: 1 1 160px; min-width: 0; font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: inherit; }
 .tickets-list li.done .bk-name { color: var(--ok); }
 .tickets-list li.done .bk-name::before { content: "✓ "; }
+.bk-alert { margin: 0; font-size: 15px; line-height: 1.4; color: #b42318; background: #fde8e6; border: 2px solid #e5484d; border-radius: 10px; padding: 8px 10px; }
+.bk-alert:empty { display: none; }
+.bk-problems { margin: 0; font-size: 15px; color: #b42318; background: #fde8e6; border: 2px solid #e5484d; border-radius: 12px; padding: 10px 12px; }
+.bk-problems[hidden] { display: none; }
+.tickets-list li.problem { background: color-mix(in srgb, #e5484d 7%, transparent); border-left: 5px solid #e5484d; padding-left: 10px; border-radius: 8px; }
+.stop:not(.has-problem) .bk-alert { display: none; }
+.stop.has-problem { outline: 3px solid #e5484d; outline-offset: -3px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .bk-alert, :root:not([data-theme="light"]) .bk-problems { color: #ffb4ab; background: #3a1414; } }
+:root[data-theme="dark"] .bk-alert, :root[data-theme="dark"] .bk-problems { color: #ffb4ab; background: #3a1414; }
 .vote.booklink { display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); font-weight: 700; }
 .vote.navlink { max-width: 100%; }
 .vote.booklink::before, .vote.bookbtn::before, .vote.bookbtn[aria-pressed="true"]::before { content: none; }
@@ -734,6 +743,7 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
 
   <section class="tickets-list" aria-labelledby="tixHead">
     <h2 id="tixHead">Tickets and reservations to book <span class="bk-count" id="tixCount"></span></h2>
+    <p class="bk-problems" id="tixProblems" role="status" hidden></p>
     <p class="tip">Tick <b>Booked</b> when it's done and type the confirmation number, so it's saved on both phones.</p>
     <ul id="tix"></ul>
     <p class="tip">If we pick 3 or more paid attractions (Empire State Building, Statue of Liberty, Edge, Vessel), compare against the <a href="https://gocity.com/en/new-york/passes" target="_blank" rel="noopener">Go City New York Pass</a> before buying separately.</p>
@@ -1061,22 +1071,26 @@ const BOOK_URL = {
 };
 const bookUrl = e => BOOK_URL[e.id] || e.url;
 // When to book and what to pick, for the booking list. Approximate; check the site.
+// Problems found when checking the booking sites. Shown in red until it's marked Booked.
+const BOOK_PROBLEM = {
+  "xmas-dinner": "No tables for Dec 25. The Smith showed no online tables on Christmas Day (checked Nov 13). Call 212-496-5700, or pick another restaurant.",
+  "rink": "Your 4:30 PM time is sold out (checked Nov 13). Pick 4:10 PM or 4:20 PM instead, or a quieter morning time.",
+  "broadway": "No show picked yet. Choose a show, then book a 2:00 PM matinee on Thu, Dec 24.",
+};
 const BOOK_TIP = {
   "nye-ball": "Timed entry, about $155 each. Pick the noon slot.",
   "bronx-zoo": "Timed tickets, about $30–45 each. Pick a 5:00 PM entry.",
   "blue-box": "Resy opens tables 30 days ahead at midnight (Eastern), so Dec 21 opens Sat, Nov 21 at 12:00 AM. Be ready right at midnight.",
   "radio-city": "The 1:00 PM show on Mon, Dec 21 is on sale. Seats run about $50–250+ each, fees included.",
   "friends": "Timed entry, about $45–60 each. Pick about 2:45 PM.",
-  "rink": "4:30 PM on Dec 21 was sold out (Nov 13). Closest: 4:10 PM ($188 for two) or 4:20 PM ($198). Mornings are quieter and cheaper: 8:10 AM was $132 for two.",
+  "rink": "Prices for two on Dec 21: 4:10 PM $188, 4:20 PM $198. Mornings are quieter and cheaper: 8:10 AM was $132.",
   "lightscape": "Timed tickets, about $35–45 each. Pick about 5:30 PM. Evenings near Christmas sell out.",
   "statue": "Book the first ferry, about 9:00 AM, from Battery Park. About $25–30 each. Pedestal and crown tickets sell out first.",
   "rh": "2:00 PM on Wed, Dec 23 for two was open (Nov 13).",
   "vessel": "Timed tickets, about $10–15 each. Edge sells an Edge + Vessel bundle that saves 10%.",
   "edge": "From $44 each. Sunset (about 4:30 PM) costs more, so book soon. Booking ahead can be cheaper.",
   "macys": "Free. Times come out 7 days ahead at 6:30 AM Eastern, so Dec 24 opens Thu, Dec 17 at 6:30 AM.",
-  "broadway": "Pick the show first, then look for a 2:00 PM matinee on Thu, Dec 24.",
   "serendipity": "6:30 PM on Thu, Dec 24 for two was open (Nov 13).",
-  "xmas-dinner": "No online tables for Dec 25 (checked Nov 13). Call them at 212-496-5700, or pick another place for Christmas dinner.",
 };
 const byId = Object.fromEntries(EVENTS.map(e => [e.id, e]));
 
@@ -1122,6 +1136,7 @@ for (const e of EVENTS) {
       <div class="title-row"><span class="name"><a href="${e.url}" target="_blank" rel="noopener">${e.name}</a></span>
         <span class="tag ${e.kind}">${tag}</span><span class="rv-chip" id="rv-${e.id}" hidden></span></div>
       ${e.note ? `<p class="note">${e.note}</p>` : ""}
+      ${BOOK_PROBLEM[e.id] ? `<p class="bk-alert" role="note"><b>⚠ Problem:</b> ${BOOK_PROBLEM[e.id]}</p>` : ""}
       <fieldset class="answer"><legend class="sr">Our answer for ${e.name}</legend>
         <label><input type="radio" class="ans" name="dec-${e.id}" value="keep"><span>&#10003; Keep</span></label>
         <label><input type="radio" class="ans" name="dec-${e.id}" value="maybe"><span>? Maybe</span></label>
@@ -1183,6 +1198,7 @@ function render() {
     li.querySelectorAll("input, select, button").forEach(el => el.disabled = readOnly);
     const bb = li.querySelector(".bookbtn");
     if (bb) { bb.setAttribute("aria-pressed", s.booked); bb.textContent = s.booked ? "✓ Booked" : "Not booked yet"; li.classList.toggle("booked", s.booked); }
+    li.classList.toggle("has-problem", !!BOOK_PROBLEM[e.id] && s.go && !s.booked);
     const nav = li.querySelector(".navlink");
     if (nav) { const d = directionsFor(e.id); nav.href = d.href; nav.textContent = d.text; nav.title = d.title; }
     const sv = { ...s, go: s.go && !s.skip };
@@ -1240,6 +1256,10 @@ function render() {
   const ul = document.getElementById("tix");
   const nBooked = tixItems.filter(i => i.s.booked).length;
   document.getElementById("tixCount").textContent = tixItems.length ? `${nBooked} of ${tixItems.length} booked` : "";
+  const probs = tixItems.filter(i => !i.s.booked && BOOK_PROBLEM[i.e.id]);
+  const pb = document.getElementById("tixProblems");
+  pb.hidden = !probs.length;
+  pb.innerHTML = probs.length ? `<b>⚠ ${probs.length} ${probs.length === 1 ? "place needs" : "places need"} attention:</b> ${probs.map(i => i.e.name).join(", ")}. They're marked in red below.` : "";
   const want = tixItems.length ? tixItems.map(({ e, s }) => {
     let li = tixEls[e.id];
     if (!li) {
@@ -1247,6 +1267,7 @@ function render() {
       li.dataset.id = e.id;
       li.innerHTML = `<label class="bk-check"><input type="checkbox" class="bk-done"><span>Booked</span></label>
         <div class="bk-body"><div class="bk-top"><b class="bk-name"></b><span class="bk-when"></span></div>
+          <p class="bk-alert" role="note"></p>
           <p class="bk-tip"></p>
           <div class="bk-actions"><a class="btn primary bk-go" target="_blank" rel="noopener">🎟️ Book now</a>
           <input type="text" class="bk-conf" maxlength="80" placeholder="Confirmation number" aria-label="Confirmation number for ${e.name}"></div></div>`;
@@ -1256,6 +1277,9 @@ function render() {
     const day = DAYS.find(d => d.id === s.day);
     li.querySelector(".bk-when").textContent = `${day.id === "any" ? "Anytime" : day.title}, ${fmt(s.time)}`;
     li.querySelector(".bk-tip").textContent = BOOK_TIP[e.id] || "";
+    const problem = !s.booked && BOOK_PROBLEM[e.id];
+    li.classList.toggle("problem", !!problem);
+    li.querySelector(".bk-alert").innerHTML = problem ? `<b>⚠ Problem:</b> ${problem}` : "";
     li.classList.toggle("done", s.booked);
     li.querySelector(".bk-done").checked = s.booked;
     li.querySelector(".bk-go").textContent = s.booked ? "Open booking site" : "🎟️ Book now";
