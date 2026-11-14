@@ -1468,7 +1468,7 @@ function change(id, patch, delay = 0) {
   picks[id] = { ...stateOf(id), ...patch };
   render();
   clearTimeout(timers[id]);
-  timers[id] = setTimeout(() => store?.save(id, picks[id]), delay);
+  timers[id] = setTimeout(() => { delete timers[id]; store?.save(id, picks[id]); }, delay);
 }
 plan.addEventListener("change", ev => {
   const li = ev.target.closest(".stop"); if (!li) return;
@@ -1483,7 +1483,7 @@ plan.addEventListener("input", ev => {
   const id = ev.target.closest(".stop").dataset.id;
   picks[id] = { ...stateOf(id), memo: ev.target.value };
   clearTimeout(timers[id]);
-  timers[id] = setTimeout(() => store?.save(id, picks[id]), 700);
+  timers[id] = setTimeout(() => { delete timers[id]; store?.save(id, picks[id]); }, 700);
 });
 plan.addEventListener("click", ev => {
   const sk = ev.target.closest(".skipbtn");
@@ -1508,7 +1508,7 @@ tixUl.addEventListener("input", ev => {
   const id = ev.target.closest("li").dataset.id;
   picks[id] = { ...stateOf(id), conf: ev.target.value };
   clearTimeout(timers[id]);
-  timers[id] = setTimeout(() => store?.save(id, picks[id]), 700);
+  timers[id] = setTimeout(() => { delete timers[id]; store?.save(id, picks[id]); }, 700);
 });
 const tb = document.getElementById("toolbar");
 tb.addEventListener("submit", ev => ev.preventDefault());
@@ -1568,7 +1568,8 @@ async function start() {
     if (!snap.metadata.fromCache) clearTimeout(slow);
     const next = {};
     snap.docs.forEach(d => { if (byId[d.id]) next[d.id] = d.data(); });
-    for (const id in timers) if (picks[id] && !next[id]) next[id] = picks[id];
+    // Keep edits that are still waiting to save, so a save from the other phone can't wipe them.
+    for (const id in timers) if (picks[id]) next[id] = picks[id];
     picks = next;
     status.textContent = readOnly ? "View only" : "Shared · changes save automatically";
     render();

@@ -302,6 +302,26 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
 .tickets-list li { padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }
 .tickets-list li:first-child { border-top: 0; }
 .tickets-list li a { font-weight: 700; }
+.tickets-list li:not(.bk-empty) { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 14px 0; }
+.bk-count { font-size: 15px; font-weight: 600; color: var(--muted); margin-left: 6px; }
+.bk-check { display: grid; justify-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
+.bk-check input { width: 28px; height: 28px; accent-color: var(--ok); margin: 0; }
+.bk-body { display: grid; gap: 6px; min-width: 0; }
+.bk-top { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.bk-name { font-size: 17px; }
+.bk-when { font-size: 14px; color: var(--muted); }
+.bk-tip { margin: 0; font-size: 14px; }
+.bk-tip:empty { display: none; }
+.bk-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bk-actions .btn { text-decoration: none; }
+.bk-conf { flex: 1 1 160px; min-width: 0; font: inherit; font-size: 15px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: inherit; }
+.tickets-list li.done .bk-name { color: var(--ok); }
+.tickets-list li.done .bk-name::before { content: "✓ "; }
+.vote.booklink { display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); font-weight: 700; }
+.vote.navlink { max-width: 100%; }
+.vote.booklink::before, .vote.bookbtn::before, .vote.bookbtn[aria-pressed="true"]::before { content: none; }
+.vote.bookbtn { color: var(--accent); border-color: currentColor; }
+.vote.bookbtn[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: var(--surface); }
 .tip { font-size: 14px; color: var(--muted); margin: 0; }
 
 /* today guide: what's now, what's next, when to leave */
@@ -713,7 +733,8 @@ button:disabled, input:disabled, select:disabled { cursor: default; opacity: .65
   </section>
 
   <section class="tickets-list" aria-labelledby="tixHead">
-    <h2 id="tixHead">Tickets and reservations to book</h2>
+    <h2 id="tixHead">Tickets and reservations to book <span class="bk-count" id="tixCount"></span></h2>
+    <p class="tip">Tick <b>Booked</b> when it's done and type the confirmation number, so it's saved on both phones.</p>
     <ul id="tix"></ul>
     <p class="tip">If we pick 3 or more paid attractions (Empire State Building, Statue of Liberty, Edge, Vessel), compare against the <a href="https://gocity.com/en/new-york/passes" target="_blank" rel="noopener">Go City New York Pass</a> before buying separately.</p>
   </section>
@@ -995,11 +1016,68 @@ function legHTML(prev, e, s) {
     <p>${leg.text}${link}</p>${choice ? `<p class="choice">${choice}</p>` : ""}${tip ? `<p class="tipline">${tip}</p>` : ""}`;
 }
 const hotelLink = () => names.hotel ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(names.hotel)}&travelmode=transit` : "";
+// Where you'd be coming from: the stop we kept just before this one on the same day,
+// or the hotel for the first stop of the day (and for "Anytime" places).
+function originFor(id) {
+  const s = stateOf(id);
+  if (s.day !== "any") {
+    let best = null;
+    for (const e of EVENTS) {
+      if (e.id === id || !COORDS[e.id]) continue;
+      const p = stateOf(e.id);
+      if (p.day !== s.day || !p.go || p.skip || p.time > s.time) continue;
+      if (p.time === s.time && EVENTS.indexOf(e) > EVENTS.indexOf(byId[id])) continue;
+      if (!best || p.time >= best.time) best = { id: e.id, time: p.time };
+    }
+    if (best) return { id: best.id, label: byId[best.id].name.split(/,| at /)[0] };
+  }
+  return names.hotel ? { hotel: names.hotel, label: "the hotel" } : null;
+}
+function directionsFor(id) {
+  const o = originFor(id), [la, lo] = COORDS[id];
+  const mode = o?.id ? legInfo(o.id, id).mode : "subway";
+  const from = !o ? "" : o.id ? `&origin=${COORDS[o.id][0]},${COORDS[o.id][1]}` : `&origin=${encodeURIComponent(o.hotel)}`;
+  const travel = mode === "walk" ? "walking" : mode === "taxi" ? "driving" : "transit";
+  const short = o ? (o.label.length > 26 ? o.label.slice(0, 25).trim() + "…" : o.label) : "";
+  return {
+    href: `https://www.google.com/maps/dir/?api=1${from}&destination=${la},${lo}&travelmode=${travel}`,
+    text: o ? `Directions from ${short}` : "Directions from where I am",
+    title: o ? `Directions from ${o.id ? byId[o.id].name : o.hotel}` : "Add the hotel at the top so the first stop of each day starts there",
+  };
+}
 const appleLink = id => `https://maps.apple.com/?daddr=${COORDS[id][0]},${COORDS[id][1]}&dirflg=r`;
 const startHTML = e => STATIONS[e.id]
   ? `<div class="hrow"><span class="mode m-subway">Start</span>${bullets(STATIONS[e.id].lines)}<span class="mins">Nearest subway: ${STATIONS[e.id].st}</span></div>` : "";
 const backHTML = e => `<div class="hrow"><span class="mode m-either">Heading back</span></div><p>${(BACK[e.id] || "").replace(/^Heading back: /, "")}${hotelLink() ? ` <a href="${hotelLink()}" target="_blank" rel="noopener">Take me back to the hotel</a>` : ""}</p>`;
 const KIND_LABEL = { free: "Free", tickets: "Tickets", food: "Food" };
+const needsBooking = e => e.kind === "tickets" || !!e.book;
+// Direct booking pages, where the event's main link is a search or an info page.
+const BOOK_URL = {
+  "vessel": "https://www.vesselnyc.com/",
+  "macys": "https://santalandnewyorkmacys.showare.com/",
+  "xmas-dinner": "https://www.opentable.com/the-smith-lincoln-square?dateTime=2026-12-25T18%3A00&covers=2",
+  "blue-box": "https://resy.com/cities/new-york-ny/venues/bluebox-cafe-by-daniel-boulud?date=2026-12-21&seats=2",
+  "rh": "https://www.opentable.com/r/rh-rooftop-restaurant-at-rh-new-york?dateTime=2026-12-23T14%3A00&covers=2",
+};
+const bookUrl = e => BOOK_URL[e.id] || e.url;
+// When to book and what to pick, for the booking list. Approximate; check the site.
+const BOOK_TIP = {
+  "nye-ball": "Timed entry, about $155 each. Pick the noon slot.",
+  "bronx-zoo": "Timed tickets, about $30–45 each. Pick a 5:00 PM entry.",
+  "blue-box": "Resy opens tables 30 days ahead at midnight (Eastern), so Dec 21 opens Sat, Nov 21 at 12:00 AM. Be ready right at midnight.",
+  "radio-city": "The 1:00 PM show on Mon, Dec 21 is on sale. Seats run about $50–250+ each, fees included.",
+  "friends": "Timed entry, about $45–60 each. Pick about 2:45 PM.",
+  "rink": "4:30 PM on Dec 21 was sold out (Nov 13). Closest: 4:10 PM ($188 for two) or 4:20 PM ($198). Mornings are quieter and cheaper: 8:10 AM was $132 for two.",
+  "lightscape": "Timed tickets, about $35–45 each. Pick about 5:30 PM. Evenings near Christmas sell out.",
+  "statue": "Book the first ferry, about 9:00 AM, from Battery Park. About $25–30 each. Pedestal and crown tickets sell out first.",
+  "rh": "2:00 PM on Wed, Dec 23 for two was open (Nov 13).",
+  "vessel": "Timed tickets, about $10–15 each. Edge sells an Edge + Vessel bundle that saves 10%.",
+  "edge": "From $44 each. Sunset (about 4:30 PM) costs more, so book soon. Booking ahead can be cheaper.",
+  "macys": "Free. Times come out 7 days ahead at 6:30 AM Eastern, so Dec 24 opens Thu, Dec 17 at 6:30 AM.",
+  "broadway": "Pick the show first, then look for a 2:00 PM matinee on Thu, Dec 24.",
+  "serendipity": "6:30 PM on Thu, Dec 24 for two was open (Nov 13).",
+  "xmas-dinner": "No online tables for Dec 25 (checked Nov 13). Call them at 212-496-5700, or pick another place for Christmas dinner.",
+};
 const byId = Object.fromEntries(EVENTS.map(e => [e.id, e]));
 
 const DECS = new Set(["keep", "maybe", "pass"]);
@@ -1010,7 +1088,7 @@ let readOnly = false;
 
 const stateOf = id => {
   const e = byId[id], p = picks[id] || {};
-  return { dec: DECS.has(p.dec) ? p.dec : (p.go ? "keep" : ""), go: !!p.go, skip: !!p.skip, day: p.day || e.day, time: p.time || e.time, a: !!p.a, b: !!p.b, memo: p.memo || "", review: DECS.has(p.review) ? p.review : "", reviewNote: p.reviewNote || "" };
+  return { dec: DECS.has(p.dec) ? p.dec : (p.go ? "keep" : ""), go: !!p.go, skip: !!p.skip, day: p.day || e.day, time: p.time || e.time, a: !!p.a, b: !!p.b, memo: p.memo || "", review: DECS.has(p.review) ? p.review : "", reviewNote: p.reviewNote || "", booked: !!p.booked, conf: p.conf || "" };
 };
 
 /* ---------- build ---------- */
@@ -1053,7 +1131,9 @@ for (const e of EVENTS) {
         <button type="button" class="vote" data-who="a" id="a-${e.id}" aria-pressed="false"></button>
         <button type="button" class="vote" data-who="b" id="b-${e.id}" aria-pressed="false"></button>
         <select class="daysel" id="day-${e.id}" aria-label="Day for ${e.name}">${dayOptions}</select>
-        ${COORDS[e.id] ? `<a class="vote navlink" href="https://www.google.com/maps/dir/?api=1&destination=${COORDS[e.id][0]},${COORDS[e.id][1]}&travelmode=transit" target="_blank" rel="noopener">Directions</a>` : ""}
+        ${COORDS[e.id] ? `<a class="vote navlink" href="#" target="_blank" rel="noopener">Directions</a>` : ""}
+        ${needsBooking(e) ? `<a class="vote booklink" href="${bookUrl(e)}" target="_blank" rel="noopener">🎟️ Book</a>
+        <button type="button" class="vote bookbtn" id="booked-${e.id}" aria-pressed="false">Not booked yet</button>` : ""}
         <button type="button" class="vote skipbtn" id="skip-${e.id}">Skip on the day</button>
         <input type="text" class="memo" id="memo-${e.id}" placeholder="Notes" maxlength="200" aria-label="Notes for ${e.name}">
       </div>
@@ -1072,6 +1152,7 @@ function legEl(key, html, kind) {
   if (el.dataset.html !== html) { el.innerHTML = html; el.dataset.html = html; }
   return el;
 }
+const tixEls = {};
 function render() {
   if (typeof renderReviewChips === "function") renderReviewChips();
   document.querySelectorAll('.vote[data-who="a"]').forEach(b => b.textContent = names.a || "Planner 1");
@@ -1100,11 +1181,15 @@ function render() {
     li.querySelector('[data-who="a"]').setAttribute("aria-pressed", s.a);
     li.querySelector('[data-who="b"]').setAttribute("aria-pressed", s.b);
     li.querySelectorAll("input, select, button").forEach(el => el.disabled = readOnly);
+    const bb = li.querySelector(".bookbtn");
+    if (bb) { bb.setAttribute("aria-pressed", s.booked); bb.textContent = s.booked ? "✓ Booked" : "Not booked yet"; li.classList.toggle("booked", s.booked); }
+    const nav = li.querySelector(".navlink");
+    if (nav) { const d = directionsFor(e.id); nav.href = d.href; nav.textContent = d.text; nav.title = d.title; }
     const sv = { ...s, go: s.go && !s.skip };
     buckets[s.day].push({ e, s: sv });
     if (sv.go) {
       picked++;
-      if (e.kind === "tickets" || e.book) { tix++; tixItems.push({ e, s: sv }); }
+      if (needsBooking(e)) { tix++; tixItems.push({ e, s: sv }); }
       if (e.kind === "free" && !e.book) free++;
     }
     if (s.a && s.b) both++;
@@ -1153,14 +1238,33 @@ function render() {
   const order = Object.fromEntries(DAYS.map((d, i) => [d.id, i]));
   tixItems.sort((x, y) => order[x.s.day] - order[y.s.day] || x.s.time.localeCompare(y.s.time));
   const ul = document.getElementById("tix");
-  ul.replaceChildren(...(tixItems.length ? tixItems.map(({ e, s }) => {
-    const li = document.createElement("li");
+  const nBooked = tixItems.filter(i => i.s.booked).length;
+  document.getElementById("tixCount").textContent = tixItems.length ? `${nBooked} of ${tixItems.length} booked` : "";
+  const want = tixItems.length ? tixItems.map(({ e, s }) => {
+    let li = tixEls[e.id];
+    if (!li) {
+      li = tixEls[e.id] = document.createElement("li");
+      li.dataset.id = e.id;
+      li.innerHTML = `<label class="bk-check"><input type="checkbox" class="bk-done"><span>Booked</span></label>
+        <div class="bk-body"><div class="bk-top"><b class="bk-name"></b><span class="bk-when"></span></div>
+          <p class="bk-tip"></p>
+          <div class="bk-actions"><a class="btn primary bk-go" target="_blank" rel="noopener">🎟️ Book now</a>
+          <input type="text" class="bk-conf" maxlength="80" placeholder="Confirmation number" aria-label="Confirmation number for ${e.name}"></div></div>`;
+      li.querySelector(".bk-go").href = bookUrl(e);
+      li.querySelector(".bk-name").textContent = e.name;
+    }
     const day = DAYS.find(d => d.id === s.day);
-    const a = document.createElement("a");
-    a.href = e.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = e.name;
-    li.append(a, ` · ${day.id === "any" ? "Anytime" : day.title}, ${fmt(s.time)}`);
+    li.querySelector(".bk-when").textContent = `${day.id === "any" ? "Anytime" : day.title}, ${fmt(s.time)}`;
+    li.querySelector(".bk-tip").textContent = BOOK_TIP[e.id] || "";
+    li.classList.toggle("done", s.booked);
+    li.querySelector(".bk-done").checked = s.booked;
+    li.querySelector(".bk-go").textContent = s.booked ? "Open booking site" : "🎟️ Book now";
+    const c = li.querySelector(".bk-conf"); if (active !== c) c.value = s.conf;
+    li.querySelectorAll("input").forEach(el => el.disabled = readOnly);
     return li;
-  }) : [Object.assign(document.createElement("li"), { textContent: "Nothing yet. Check an event with tickets and it shows up here." })]));
+  }) : [Object.assign(document.createElement("li"), { className: "bk-empty", textContent: "Nothing yet. Keep an event with tickets and it shows up here." })];
+  const have = [...ul.children];
+  if (!(want.length === have.length && want.every((r, i) => r === have[i])) && !want.some(r => r.contains(active))) ul.replaceChildren(...want);
 }
 const fmt = t => { const [h, m] = t.split(":").map(Number); return `${(h % 12) || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
 
@@ -1364,7 +1468,7 @@ function change(id, patch, delay = 0) {
   picks[id] = { ...stateOf(id), ...patch };
   render();
   clearTimeout(timers[id]);
-  timers[id] = setTimeout(() => store?.save(id, picks[id]), delay);
+  timers[id] = setTimeout(() => { delete timers[id]; store?.save(id, picks[id]); }, delay);
 }
 plan.addEventListener("change", ev => {
   const li = ev.target.closest(".stop"); if (!li) return;
@@ -1379,12 +1483,14 @@ plan.addEventListener("input", ev => {
   const id = ev.target.closest(".stop").dataset.id;
   picks[id] = { ...stateOf(id), memo: ev.target.value };
   clearTimeout(timers[id]);
-  timers[id] = setTimeout(() => store?.save(id, picks[id]), 700);
+  timers[id] = setTimeout(() => { delete timers[id]; store?.save(id, picks[id]); }, 700);
 });
 plan.addEventListener("click", ev => {
   const sk = ev.target.closest(".skipbtn");
   if (sk) { const id = sk.closest(".stop").dataset.id; change(id, { skip: !stateOf(id).skip }); return; }
-  const b = ev.target.closest(".vote"); if (!b || b.classList.contains("navlink")) return;
+  const bk = ev.target.closest(".bookbtn");
+  if (bk) { const id = bk.closest(".stop").dataset.id; change(id, { booked: !stateOf(id).booked }); return; }
+  const b = ev.target.closest(".vote"); if (!b || b.classList.contains("navlink") || b.classList.contains("booklink")) return;
   const id = b.closest(".stop").dataset.id, who = b.dataset.who;
   const s = stateOf(id);
   const patch = { [who]: !s[who] };
@@ -1392,6 +1498,18 @@ plan.addEventListener("click", ev => {
   change(id, patch);
 });
 plan.addEventListener("submit", ev => ev.preventDefault());
+const tixUl = document.getElementById("tix");
+tixUl.addEventListener("change", ev => {
+  if (!ev.target.classList.contains("bk-done")) return;
+  change(ev.target.closest("li").dataset.id, { booked: ev.target.checked });
+});
+tixUl.addEventListener("input", ev => {
+  if (!ev.target.classList.contains("bk-conf")) return;
+  const id = ev.target.closest("li").dataset.id;
+  picks[id] = { ...stateOf(id), conf: ev.target.value };
+  clearTimeout(timers[id]);
+  timers[id] = setTimeout(() => { delete timers[id]; store?.save(id, picks[id]); }, 700);
+});
 const tb = document.getElementById("toolbar");
 tb.addEventListener("submit", ev => ev.preventDefault());
 let nameTimer;
@@ -1450,7 +1568,8 @@ async function start() {
     if (!snap.metadata.fromCache) clearTimeout(slow);
     const next = {};
     snap.docs.forEach(d => { if (byId[d.id]) next[d.id] = d.data(); });
-    for (const id in timers) if (picks[id] && !next[id]) next[id] = picks[id];
+    // Keep edits that are still waiting to save, so a save from the other phone can't wipe them.
+    for (const id in timers) if (picks[id]) next[id] = picks[id];
     picks = next;
     status.textContent = readOnly ? "View only" : "Shared · changes save automatically";
     render();
@@ -1659,6 +1778,7 @@ function mergePick(id, imp) {
   let memo = cur.memo;
   if (imp.memo && !cur.memo.includes(imp.memo)) memo = (cur.memo ? cur.memo + " / " + imp.memo : imp.memo).slice(0, 200);
   return {
+    ...cur,
     dec: DEC_RANK[imp.dec] > DEC_RANK[cur.dec] ? imp.dec : cur.dec,
     go: cur.go || imp.go, skip: cur.skip || imp.skip, a: cur.a || imp.a, b: cur.b || imp.b, memo,
     day: takeTheirs && imp.day ? imp.day : cur.day,
@@ -1895,7 +2015,8 @@ function renderReviewChips() {
     const prevId = (() => { for (let k = i - 1; k >= 0; k--) { const p = stateOf(order[k]); if (p.day !== s.day || s.day === "any") break; if (p.dec !== "pass") return order[k]; } return null; })();
     const leg = prevId ? legInfo(prevId, id) : null;
     const row = (icon, label, val) => val ? `<div class="rv-fact"><span class="rv-ico" aria-hidden="true">${icon}</span><div><b>${label}</b><p>${val}</p></div></div>` : "";
-    const dir = COORDS[id] ? `https://www.google.com/maps/dir/?api=1&destination=${COORDS[id][0]},${COORDS[id][1]}&travelmode=transit` : "";
+    const dirInfo = COORDS[id] ? directionsFor(id) : null;
+    const dir = dirInfo ? (prevId && COORDS[prevId] ? mapsLink(prevId, id, leg.mode) : dirInfo.href) : "";
     const hours = "https://www.google.com/search?q=" + encodeURIComponent(e.name + " New York hours");
     return `<section class="rv-box rv-details"><h3>Good to know</h3>
       ${row("📍", "Where", rvEsc(addr || ""))}
@@ -1906,7 +2027,7 @@ function renderReviewChips() {
       ${leg ? row("🚶", `Getting here from ${rvEsc(byId[prevId].name)}`, `${MODE_LABEL[leg.mode] || ""}${leg.min ? `, about ${leg.min} min` : ""}. ${rvEsc(leg.text)}`) : ""}
       ${miniMap(id)}
       <div class="rv-links">
-        ${dir ? `<a class="rv-link" href="${dir}" target="_blank" rel="noopener">➤ Directions</a>` : ""}
+        ${dir ? `<a class="rv-link" href="${dir}" target="_blank" rel="noopener">➤ ${prevId && COORDS[prevId] ? "Directions from " + rvEsc(byId[prevId].name.split(/,| at /)[0]) : rvEsc(dirInfo.text)}</a>` : ""}
         <a class="rv-link" href="${hours}" target="_blank" rel="noopener">🕒 Check hours</a>
         <a class="rv-link" href="${e.url}" target="_blank" rel="noopener">ℹ️ Website</a>
       </div>
