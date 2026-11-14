@@ -247,7 +247,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .vote.navlink { display: inline-flex; align-items: center; text-decoration: none; color: var(--ink); }
 .vote.navlink::before { content: "\27A4\00a0"; }
 .vote.skipbtn::before { content: "\2715\00a0"; }
-.stop:not(.on) .skipbtn { display: none; }
+.stop:not(.on) .skipbtn, .stop:not(.on) .booklink, .stop:not(.on) .bookbtn { display: none; }
 .stop.skipped { opacity: .6; }
 .stop.skipped .name a { text-decoration: line-through; }
 .stop.skipped .skipbtn { color: var(--accent); border-color: var(--accent); }
